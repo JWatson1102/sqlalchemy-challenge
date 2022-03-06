@@ -21,6 +21,8 @@ year_ago
 begin_date = dt.datetime(2016, 8, 23)
 
 last_12_months = session.query(Measurement.date, Measurement.prcp).filter(Measurement.date > begin_date).all()
+session.close()
+
 
 precip_dates = []
 prcps = []
@@ -37,6 +39,7 @@ for row in session.execute('SELECT station, COUNT(station) AS count FROM measure
     active_stations.append(row[0])
     station_counts.append(row[1])
     station_count_list.append(row)
+session.close()
 
 most_active_station = active_stations[0]
 #####################################################################
@@ -44,10 +47,11 @@ stations = []
 for station in session.query(Station.station):
     stations.append(station)
 stations
+session.close()
 #####################################################################
 yearly_temp = session.query(Measurement.date, Measurement.station, Measurement.tobs).\
     filter(Measurement.date > begin_date, Measurement.station == most_active_station)
-
+session.close()
 temp_dates = []
 temps = []
 for row in yearly_temp:
@@ -80,21 +84,31 @@ def station_api():
 def tobs():
     return jsonify(temp_dict)
 
-@app.route('/api/v1.0/<start>')
-def begin_search(start):
-    return(
-        session.query(Measurement.date,func.min(Measurement.tobs),\
-            func.max(Measurement.tobs), func.avg(Measurement.tobs)).\
-            filter_by(Measurement.date >= start)
-        )
+@app.route('/api/v1.0/<search_start>')
+def begin_search(search_start):
+    print(f"I'm running the search_start: {search_start}")
+    #search_start = dt.datetime.strptime(search_start, "%Y-%m-%d")
+    temps = []
+    for day in temp_dict:    
+        #print((day))
+        if day >= search_start:
+            temps.append(temp_dict[day])
 
-@app.route('/api/v1.0/<start><end>')
-def begin_end_search(start,end):
-    return(
-        session.query(Measurement.date,func.min(Measurement.tobs),\
-            func.max(Measurement.tobs), func.avg(Measurement.tobs)).\
-            filter_by(Measurement.date >= start and Measurement.date <=end)
-    )
+    return (f"Mean Temperature: {sum(temps)/len(temps)} <br>Min Temp: {min(temps)} <br>Max Temp: {max(temps)}")
+
+@app.route('/api/v1.0/<search_start>/<search_end>')
+def begin_end_search(search_start, search_end):
+    print(f"I'm running the search_start: {search_start}")
+    #search_start = dt.datetime.strptime(search_start, "%Y-%m-%d")
+    temps = []
+    for day in temp_dict:    
+        #print((day))
+        if day >= search_start and day <= search_end:
+            temps.append(temp_dict[day])
+    return (f"Mean Temperature: {sum(temps)/len(temps)} <br>Min Temp: {min(temps)} <br>Max Temp: {max(temps)}")
+    
+
+
     
 
 if __name__ == "__main__":
