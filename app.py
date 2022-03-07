@@ -64,9 +64,9 @@ temp_dict = {temp_dates[i]: temps[i] for i in range(0, len(temp_dates))}
 @app.route("/")
 def home():
     return (
-        f"These are the available routes:<br/> "
-        f"/api/v1.0/precipitation<br/>"
-        f"/api/v1.0/stations<br/>"
+        f"These are the available routes:<br> "
+        f"/api/v1.0/precipitation<br>"
+        f"/api/v1.0/stations<br>"
         f"/api/v1.0/tobs"
     )
 
